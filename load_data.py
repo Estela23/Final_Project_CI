@@ -30,7 +30,13 @@ def save_data_to_csv(data_frame, path, name_file):
 path_local = 'C:/Users/Estela/Desktop/MAI/MAI 20-21/(CI) Inteligencia Computacional/FinalProject/predict-volcanic-eruptions-ingv-oe'
 train_path = os.path.join(path_local, 'train')
 test_path = os.path.join(path_local, 'test')
+
 train_list, train_matrix = create_matrix(train_path)
+print("Dataframe for the train data created")
 save_data_to_csv(train_matrix, path_local, "train_final_data.csv")
+print("Dataframe for the train data saved in a .csv")
+
 test_list, test_matrix = create_matrix(test_path)
-save_data_to_csv(train_matrix, path_local, "test_final_data.csv")
+print("Dataframe for the test data created")
+save_data_to_csv(test_matrix, path_local, "test_final_data.csv")
+print("Dataframe for the test data saved in a .csv")
