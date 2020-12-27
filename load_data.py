@@ -24,9 +24,8 @@ def create_matrix(data_path):
     return result_list, result_features
 
 
-def save_data_to_csv(result_features):
-    result_features.to_csv()
-
+def save_data_to_csv(data_frame, path):
+    data_frame.to_csv(rf'{path}', index=False, header=True)
 
 
 # path_local = 'C:/Users/Tair/Documents/CI/Project'
@@ -34,7 +33,9 @@ path_local = 'C:/Users/Estela/Desktop/MAI/MAI 20-21/(CI) Inteligencia Computacio
 train_path = os.path.join(path_local, 'train1')
 test_path = os.path.join(path_local, 'test1')
 train_list, train_matrix = create_matrix(train_path)
+#save_data_to_csv(train_matrix, path_local)
 test_list, test_matrix = create_matrix(test_path)
+
 
 #
 # print(len(test_list))
