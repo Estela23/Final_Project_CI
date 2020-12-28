@@ -1,10 +1,11 @@
 from lightgbm import LGBMRegressor
-from sklearn import model_selection
+from sklearn import model_selection, metrics
 import evaluation
-# import tensorflow as tf
-import numpy as np
+import tensorflow as tf
 import pandas as pd
 import os
+import numpy as np
+
 
 
 def apply_LGBM_regression(train_data, y_train, validation_data):
@@ -14,7 +15,7 @@ def apply_LGBM_regression(train_data, y_train, validation_data):
     return prediction
 
 
-# def NN():
+# def build_NN():
 #     model = tf.keras.Sequential([
 #         tf.keras.layers.Input((241,)),
 #         tf.keras.layers.BatchNormalization(),
@@ -25,10 +26,17 @@ def apply_LGBM_regression(train_data, y_train, validation_data):
 #     ])
 #
 #     model.compile(
-#         loss=rMES,
+#         loss=evaluation.rMES,
 #         optimizer=tf.keras.optimizers.Adam(learning_rate=0.001)
 #     )
 #     return model
+
+
+# def apply_NN(train_data, y_train, validation_data):
+#     nn = build_NN()
+#     nn.fit(train_data, y_train)
+#     prediction = nn.predict(validation_data)
+#     return prediction
 
 
 path_local = 'C:/Users/Tair/Documents/MAI Semester1/CI/Project'
@@ -38,5 +46,12 @@ df_data = pd.read_csv(os.path.join(path_local, file_name))
 df_reduced_data = df_data  # for debug only!!!!!!!!!!!!!!!!!!!!
 train, val, y, y_val = model_selection.train_test_split(df_reduced_data[df_reduced_data.columns[:-1]],
                                                         df_reduced_data[df_reduced_data.columns[-1]])
+
+# apply LGBM
 preds = apply_LGBM_regression(train, y, val)
-evaluation.rMES(y_val, preds)
+mse, rmse, mae = evaluation.all_errors(y_val, preds)
+
+
+# apply NN
+# preds_nn = apply_NN
+# evaluation.rMES(y_val, preds_nn)
