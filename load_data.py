@@ -6,11 +6,11 @@ from build_features import build_features
 def create_matrix(data_path):
     result_list = []
     result_features = pd.DataFrame()
-    file_names_test = os.listdir(data_path)
-    for file_name in file_names_test:
+    file_names = os.listdir(data_path)
+    for file_name in file_names:
         df_log = pd.read_csv(os.path.join(data_path, file_name))
         if df_log.iloc[1].isnull().sum() < 2:
-            train_row = []
+            train_row = list(pd.DataFrame('file', file_name.strip('.csv')))
             for ids in range(10):
                 sensor_id = f'sensor_{ids + 1}'
                 train_row.append(build_features(df_log[sensor_id].fillna(0), file_name, sensor_id))
