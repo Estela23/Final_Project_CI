@@ -29,11 +29,11 @@ def save_data_to_csv(data_frame, path, name_file):
     data_frame.to_csv(rf'{path}/{name_file}', index=False, header=True)
 
 
-# path_local = 'C:/Users/Tair/Documents/CI/Project'
+path_local = 'C:/Users/Tair/Documents/MAI Semester1/CI/Project'
 # path_local = 'C:/Users/Estela/Desktop/MAI/MAI 20-21/(CI) Inteligencia Computacional/FinalProject/predict-volcanic-eruptions-ingv-oe'
-path_local = '/home/fervn98/PycharmProjects/DATASETCI'
-train_path = os.path.join(path_local, 'train')
-test_path = os.path.join(path_local, 'test')
+# path_local = '/home/fervn98/PycharmProjects/DATASETCI'
+train_path = os.path.join(path_local, 'train1')
+test_path = os.path.join(path_local, 'test1')
 
 train_list, train_matrix = create_matrix(train_path)
 
@@ -47,7 +47,6 @@ dataframeeruption = pd.DataFrame(data=d)
 print("Dataframe for the train data created")
 result = pd.merge( train_matrix, dataframeeruption, on="segment_id")
 save_data_to_csv(result, path_local, "train_final_data.csv")
-save_data_to_csv(dataframeeruption, path_local, "train_time_to_erupt.csv")
 print("Dataframe for the train data saved in a .csv")
 
 test_list, test_matrix = create_matrix(test_path)
