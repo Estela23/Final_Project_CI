@@ -32,6 +32,11 @@ train_path = os.path.join(path_local, 'train')
 test_path = os.path.join(path_local, 'test')
 
 train_list, train_matrix = create_matrix(train_path)
+df_ground_truth = pd.read_csv(os.path.join(path_local, 'train.csv'))
+rslt_df = dataframe[dataframe['Percentage'] > 80]
+
+ground_truth = [for x in df_ground_truth["segment_id"] if x in train_list]
+train_matrix.append(df_ground_truth["time_to_eruption"], axis=1)
 print("Dataframe for the train data created")
 save_data_to_csv(train_matrix, path_local, "train_final_data.csv")
 print("Dataframe for the train data saved in a .csv")
