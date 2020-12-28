@@ -30,7 +30,8 @@ def save_data_to_csv(data_frame, path, name_file):
 
 
 # path_local = 'C:/Users/Tair/Documents/CI/Project'
-path_local = 'C:/Users/Estela/Desktop/MAI/MAI 20-21/(CI) Inteligencia Computacional/FinalProject/predict-volcanic-eruptions-ingv-oe'
+# path_local = 'C:/Users/Estela/Desktop/MAI/MAI 20-21/(CI) Inteligencia Computacional/FinalProject/predict-volcanic-eruptions-ingv-oe'
+path_local = '/home/fervn98/PycharmProjects/DATASETCI'
 train_path = os.path.join(path_local, 'train')
 test_path = os.path.join(path_local, 'test')
 
@@ -40,8 +41,13 @@ df_ground_truth = pd.read_csv(os.path.join(path_local, 'train.csv'))
 ground_truth = df_ground_truth.loc[df_ground_truth['segment_id'].isin(train_list)]
 y_train = [y for y in ground_truth["time_to_eruption"]]
 
+d = {'segment_id': train_list, 'time_to_eruption': y_train}
+dataframeeruption = pd.DataFrame(data=d)
+
 print("Dataframe for the train data created")
-save_data_to_csv(train_matrix, path_local, "train_final_data.csv")
+result = pd.merge( train_matrix, dataframeeruption, on="segment_id")
+save_data_to_csv(result, path_local, "train_final_data.csv")
+save_data_to_csv(dataframeeruption, path_local, "train_time_to_erupt.csv")
 print("Dataframe for the train data saved in a .csv")
 
 test_list, test_matrix = create_matrix(test_path)
