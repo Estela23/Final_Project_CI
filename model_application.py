@@ -15,35 +15,35 @@ def apply_LGBM_regression(train_data, y_train, validation_data):
     return prediction
 
 
-# def build_NN():
-#     model = tf.keras.Sequential([
-#         tf.keras.layers.Input((241,)),
-#         tf.keras.layers.BatchNormalization(),
-#         tf.keras.layers.Dense(1000, activation="sigmoid"),
-#         tf.keras.layers.BatchNormalization(),
-#         tf.keras.layers.Dropout(0.6),
-#         tf.keras.layers.Dense(1, activation='relu')
-#     ])
-#
-#     model.compile(
-#         loss=evaluation.rMES,
-#         optimizer=tf.keras.optimizers.Adam(learning_rate=0.001)
-#     )
-#     return model
+def build_NN():
+    model = tf.keras.Sequential([
+        tf.keras.layers.Input((241,)),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Dense(1000, activation="sigmoid"),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Dropout(0.6),
+        tf.keras.layers.Dense(1, activation='relu')
+    ])
+
+    model.compile(
+        loss=evaluation.rMSE,
+        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001)
+    )
+    return model
 
 
-# def apply_NN(train_data, y_train, validation_data):
-#     nn = build_NN()
-#     nn.fit(train_data, y_train)
-#     prediction = nn.predict(validation_data)
-#     return prediction
+def apply_NN(train_data, y_train, validation_data):
+    nn = build_NN()
+    nn.fit(train_data, y_train)
+    prediction = nn.predict(validation_data)
+    return prediction
 
 
-path_local = 'C:/Users/Tair/Documents/MAI Semester1/CI/Project'
+# path_local = 'C:/Users/Tair/Documents/MAI Semester1/CI/Project'
 file_name = 'train_final_data.csv'
-df_data = pd.read_csv(os.path.join(path_local, file_name))
+df_data = pd.read_csv(file_name)
 #  feature selection
-df_reduced_data = df_data  # for debug only!!!!!!!!!!!!!!!!!!!!
+df_reduced_data = df_data.drop(columns=["segment_id"])  # for debug only!!!!!!!!!!!!!!!!!!!!
 train, val, y, y_val = model_selection.train_test_split(df_reduced_data[df_reduced_data.columns[:-1]],
                                                         df_reduced_data[df_reduced_data.columns[-1]])
 
@@ -53,5 +53,5 @@ mse, rmse, mae = evaluation.all_errors(y_val, preds)
 
 
 # apply NN
-# preds_nn = apply_NN
-# evaluation.rMES(y_val, preds_nn)
+preds_nn = apply_NN(train, y, val)
+evaluation.rMSE(y_val, preds_nn)
