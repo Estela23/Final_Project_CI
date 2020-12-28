@@ -39,11 +39,11 @@ def apply_NN(train_data, y_train, validation_data):
     return prediction
 
 
-path_local = 'C:/Users/Tair/Documents/MAI Semester1/CI/Project'
+# path_local = 'C:/Users/Tair/Documents/MAI Semester1/CI/Project'
 file_name = 'train_final_data.csv'
-df_data = pd.read_csv(os.path.join(path_local, file_name))
+df_data = pd.read_csv(file_name)
 #  feature selection
-df_reduced_data = df_data  # for debug only!!!!!!!!!!!!!!!!!!!!
+df_reduced_data = df_data.drop(columns=["segment_id"])  # for debug only!!!!!!!!!!!!!!!!!!!!
 train, val, y, y_val = model_selection.train_test_split(df_reduced_data[df_reduced_data.columns[:-1]],
                                                         df_reduced_data[df_reduced_data.columns[-1]])
 
