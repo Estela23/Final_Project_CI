@@ -34,7 +34,7 @@ def build_NN():
 
 def apply_NN(train_data, y_train, validation_data):
     nn = build_NN()
-    nn.fit(train_data, y_train)
+    nn.fit(train_data.values, y_train.values, epochs=2000, batch_size=100)
     prediction = nn.predict(validation_data)
     return prediction
 
@@ -45,7 +45,8 @@ df_data = pd.read_csv(file_name)
 #  feature selection
 df_reduced_data = df_data.drop(columns=["segment_id"])  # for debug only!!!!!!!!!!!!!!!!!!!!
 train, val, y, y_val = model_selection.train_test_split(df_reduced_data[df_reduced_data.columns[:-1]],
-                                                        df_reduced_data[df_reduced_data.columns[-1]])
+                                                        df_reduced_data[df_reduced_data.columns[-1]],
+                                                        test_size=0.2, shuffle=True)
 
 # apply LGBM
 preds = apply_LGBM_regression(train, y, val)
