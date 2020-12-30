@@ -7,7 +7,6 @@ import os
 import numpy as np
 
 
-
 def apply_LGBM_regression(train_data, y_train, validation_data):
     lgb = LGBMRegressor(random_state=100)  # ,max_depth=7,n_estimators=250,learning_rate=0.12
     lgb.fit(train_data, y_train)

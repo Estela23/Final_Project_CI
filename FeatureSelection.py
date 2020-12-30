@@ -3,8 +3,9 @@ import statsmodels.api as sm
 import pandas as pd
 import numpy as np
 
+
 def FeatureSelectionUsingCorrelation(data, correlation):
-    #x_train, x_val, y, y_val = train_test_split(data_to_split, label_y, random_state=1, test_size=0.1, shuffle=True)
+    # x_train, x_val, y, y_val = train_test_split(data_to_split, label_y, random_state=1, test_size=0.1, shuffle=True)
     cor = data.corr()
     columnsNamesArr = data.columns.values
     print(cor)
@@ -16,8 +17,10 @@ def FeatureSelectionUsingCorrelation(data, correlation):
             ColumnsNamesReturned.append(columnsNamesArr[i])'''
     print(ImportantFeatures)
     return ImportantFeatures
+
+
 def FeatureSelectionWrapper(data):
-    #x_train, x_val, y, y_val = train_test_split(data_to_split, label_y, random_state=1, test_size=0.1, shuffle=True)
+    # x_train, x_val, y, y_val = train_test_split(data_to_split, label_y, random_state=1, test_size=0.1, shuffle=True)
     X = data.drop("time_to_eruption", 1)  # Feature Matrix
     X = X.drop("segment_id", 1)
     y = data["time_to_eruption"]  # Target Variable
@@ -45,7 +48,6 @@ def FeatureSelectionWrapper(data):
     print(len(selected_features_BE))
 
     return 0
-
 
 
 path_local = '/home/fervn98/PycharmProjects/DATASETCI'
