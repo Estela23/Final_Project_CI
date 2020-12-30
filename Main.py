@@ -11,14 +11,25 @@ from model_application import apply_LGBM_regression
 
 path_local = '/home/fervn98/PycharmProjects/DATASETCI'
 def MethodSelection(methodselected, dataframe,y_train):
-    train, val, y, y_val = model_selection.train_test_split(dataframe[dataframe.columns[:-1]],
-                                                            dataframe[dataframe.columns[-1]],
-                                                            test_size=0.2, shuffle=True)
     if methodselected=="LGBM":
-        print(y)
-        prediction=apply_LGBM_regression(train,y, val)
-        mse, rmse, mae = evaluation.all_errors(y_val, prediction)
-        print(mse)
+        msefinal=0
+        rmsefinal=0
+        maefinal=0
+        for i in range(10):
+            train, val, y, y_val = model_selection.train_test_split(dataframe[dataframe.columns[:-1]],
+                                                                    dataframe[dataframe.columns[-1]],
+                                                                    test_size=0.2, shuffle=True)
+            prediction=apply_LGBM_regression(train,y, val)
+            mse, rmse, mae = evaluation.all_errors(y_val, prediction)
+            msefinal+=mse
+            rmsefinal+=rmse
+            maefinal+=mae
+        msefinal=msefinal/10
+        rmsefinal=rmsefinal/10
+        maefinal=maefinal/10
+        print(msefinal)
+        print(rmsefinal)
+        print(maefinal)
     return 0
 def FeatureSelection(methodselected,dataframe, threshold):
     if methodselected=="Correlation":
