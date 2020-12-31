@@ -7,9 +7,8 @@ import os
 import numpy as np
 
 
-
-def apply_LGBM_regression(train_data, y_train, validation_data):
-    lgb = LGBMRegressor(random_state=100)  # ,max_depth=7,n_estimators=250,learning_rate=0.12
+def apply_LGBM_regression(train_data, y_train, validation_data, y_val):
+    lgb = LGBMRegressor(random_state=100, n_estimators=2000)  # ,max_depth=7,n_estimators=250,learning_rate=0.12
     lgb.fit(train_data, y_train)
     prediction = lgb.predict(validation_data)
     return prediction
@@ -17,7 +16,7 @@ def apply_LGBM_regression(train_data, y_train, validation_data):
 
 def build_NN():
     model = tf.keras.Sequential([
-        tf.keras.layers.Input((241,)),
+        tf.keras.layers.Input((160,)),
         tf.keras.layers.BatchNormalization(),
         tf.keras.layers.Dense(1000, activation="sigmoid"),
         tf.keras.layers.BatchNormalization(),
@@ -34,7 +33,7 @@ def build_NN():
 
 def apply_NN(train_data, y_train, validation_data):
     nn = build_NN()
-    nn.fit(train_data, y_train)
+    nn.fit(train_data.values, y_train.values, epochs=2000, batch_size=100)
     prediction = nn.predict(validation_data)
     return prediction
 
@@ -43,13 +42,14 @@ def apply_NN(train_data, y_train, validation_data):
 file_name = 'train_final_data.csv'
 df_data = pd.read_csv(file_name)
 #  feature selection
-df_reduced_data = df_data.drop(columns=["segment_id"])  # for debug only!!!!!!!!!!!!!!!!!!!!
+df_reduced_data = df_data.drop(columns=["segment_id"])# for debug only!!!!!!!!!!!!!!!!!!!!
 train, val, y, y_val = model_selection.train_test_split(df_reduced_data[df_reduced_data.columns[:-1]],
-                                                        df_reduced_data[df_reduced_data.columns[-1]])
+                                                        df_reduced_data[df_reduced_data.columns[-1]],
+                                                        test_size=0.2, shuffle=True)
 
-# apply LGBM
-preds = apply_LGBM_regression(train, y, val)
-mse, rmse, mae = evaluation.all_errors(y_val, preds)
+# # apply LGBM
+# preds = apply_LGBM_regression(train, y, val, y_val)
+# mse, rmse, mae = evaluation.all_errors(y_val, preds)
 
 
 # apply NN
