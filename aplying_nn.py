@@ -44,7 +44,8 @@ def create_model(learn_rate=0.001, neurons=1, dropout=0.0):
 
     model.compile(
         loss=root_mean_squared_error,
-        optimizer=tf.keras.optimizers.Adamax(learning_rate=learn_rate, name="Adamax")
+        #optimizer=tf.keras.optimizers.Adamax(learning_rate=learn_rate, name="Adamax")
+        optimizer=tf.keras.optimizers.Adam(learning_rate=learn_rate)
     )
     return model
 
@@ -59,7 +60,7 @@ def apply_kfold(number_of_folds, train, yy, validation_set, y_val):
 
         print(f'Fold {i}')
 
-        model = create_model(neurons=500, dropout=0.3)
+        model = create_model(neurons=1000, dropout=0.6)
 
         model.fit(
             train.values[train_i],
@@ -71,6 +72,7 @@ def apply_kfold(number_of_folds, train, yy, validation_set, y_val):
         )
 
         pred = model.predict(validation_set)
+        pred = np.expm1(pred).reshape((pred.shape[0],))
         predictions.append(pred)
         print('Fold rmse', rmse(yy.values[test_i], model.predict(train.values[test_i])))
         models.append(model)
@@ -125,10 +127,11 @@ def test():
 
     test_set = load_test_data("test_final_data_complete.csv")
 
-    y = y.astype(np.float32)
+    # y = y.astype(np.float32)
+    yy = np.log1p(y)
     # grid_search_cv(train, yy)
 
-    models = apply_kfold(folds, train, y, val, y_val)  # create models using k-fold
+    models = apply_kfold(folds, train, yy, val, y_val)  # create models using k-fold
 
     # predict in test set with all models
     predictions = []
