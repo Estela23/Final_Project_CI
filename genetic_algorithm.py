@@ -30,7 +30,7 @@ def train_evaluate(ga_individual_solution):
     if n_estimators == 0 or n_leaves == 0 or max_depth == 0:
         return 100,
 
-    file_name = 'train_final_data.csv'
+    file_name = 'train_final_data_complete.csv'
     df_data = pd.read_csv(file_name)
     df_data = df_data.drop(columns=["segment_id"])
     # split into train and validation (80/20)
@@ -39,8 +39,8 @@ def train_evaluate(ga_individual_solution):
                                                                       test_size=0.20, random_state=1120)
 
     # Train LGBM model and predict on validation set
-    lgb = LGBMRegressor(random_state=600, num_leaves=n_leaves, n_estimators=n_estimators, max_depth=max_depth,
-                        learning_rate=0.01)
+    lgb = LGBMRegressor(random_state=600, num_leaves=n_leaves, n_estimators=n_estimators,
+                        max_depth=max_depth)
     lgb.fit(X_train, y_train)
     preds = lgb.predict(X_val)
     mse, rmse, mae = evaluation.all_errors(y_val, preds, verbose=True)
@@ -53,10 +53,11 @@ def apply_ga():
     population_size = 10
     num_generations = 100
     gene_length = 26
-
+    mu = population_size
+    _lambda = mu
     # Our goal is to minimize the RMSE score, that's why using -1.0.
-    creator.create('FitnessMax', base.Fitness, weights=(-1.0,))
-    creator.create('Individual', list, fitness=creator.FitnessMax)
+    creator.create('FitnessMin', base.Fitness, weights=(-1.0,))
+    creator.create('Individual', list, fitness=creator.FitnessMin)
 
     toolbox = base.Toolbox()
     toolbox.register('binary', bernoulli.rvs, 0.5)  # random variates
@@ -69,7 +70,8 @@ def apply_ga():
     toolbox.register('evaluate', train_evaluate)
 
     population = toolbox.population(n=population_size)
-    r = algorithms.eaSimple(population, toolbox, cxpb=0.4, mutpb=0.3, ngen=num_generations, verbose=True)
+
+    algorithms.eaMuCommaLambda(population, toolbox, mu, _lambda, cxpb=0.9, mutpb=0.01, ngen=num_generations, verbose=True)
 
     best_individuals = tools.selBest(population, k=1, fit_attr='fitness')
 
