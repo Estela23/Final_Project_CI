@@ -8,6 +8,7 @@ from bitstring import BitArray
 from lightgbm import LGBMRegressor
 from sympy.combinatorics.graycode import GrayCode, gray_to_bin, bin_to_gray
 
+
 # we will use ga to find the best n_estimators, number_leaves and maximum depth of the tree got LGM
 
 
@@ -48,13 +49,8 @@ def train_evaluate(ga_individual_solution):
     return mse, rmse, mae
 
 
-def apply_ga():
+def apply_ga(population_size, num_generations, gene_length, mu, _lambda):
     np.random.seed(120)
-    population_size = 10
-    num_generations = 100
-    gene_length = 26
-    mu = population_size
-    _lambda = mu
     # Our goal is to minimize the RMSE score, that's why using -1.0.
     creator.create('FitnessMin', base.Fitness, weights=(-1.0,))
     creator.create('Individual', list, fitness=creator.FitnessMin)
@@ -71,7 +67,8 @@ def apply_ga():
 
     population = toolbox.population(n=population_size)
 
-    algorithms.eaMuCommaLambda(population, toolbox, mu, _lambda, cxpb=0.9, mutpb=0.01, ngen=num_generations, verbose=True)
+    algorithms.eaMuCommaLambda(population, toolbox, mu, _lambda, cxpb=0.9, mutpb=0.01, ngen=num_generations,
+                               verbose=True)
 
     best_individuals = tools.selBest(population, k=1, fit_attr='fitness')
 
@@ -86,5 +83,10 @@ def apply_ga():
         print('\nnumber of estimators: ', best_n_estimators, ',  number of leaves: ', best_n_leaves, ', max_depth: ',
               best_max_depth)
 
-
-apply_ga()
+#############################3
+population_size = 10
+num_generations = 100
+gene_length = 26
+mu = population_size
+_lambda = mu
+apply_ga(population_size, num_generations, gene_length, mu, _lambda)
