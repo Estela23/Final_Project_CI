@@ -51,8 +51,7 @@ def train_evaluate(ga_individual_solution):
 
 def apply_ga(population_size, num_generations, gene_length, mu, _lambda):
     np.random.seed(120)
-    # Our goal is to minimize the RMSE score, that's why using -1.0.
-    creator.create('FitnessMin', base.Fitness, weights=(-1.0,))
+    creator.create('FitnessMin', base.Fitness, weights=(1.0,))
     creator.create('Individual', list, fitness=creator.FitnessMin)
 
     toolbox = base.Toolbox()
