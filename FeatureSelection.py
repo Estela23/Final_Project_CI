@@ -7,34 +7,37 @@ from sklearn.linear_model import LassoCV
 
 
 def FeatureSelectionUsingCorrelation(data, correlation):
-    #x_train, x_val, y, y_val = train_test_split(data_to_split, label_y, random_state=1, test_size=0.1, shuffle=True)
+    # x_train, x_val, y, y_val = train_test_split(data_to_split, label_y, random_state=1, test_size=0.1, shuffle=True)
     cor = data.corr()
     cor_target = abs(cor["time_to_eruption"])
     ImportantFeatures = cor_target[cor_target > correlation]
-    newDataset=data[ImportantFeatures.index].copy()
-    #newDataset=newDataset.drop("time_to_eruption", 1)
-    return ImportantFeatures.index,newDataset
-def FeatureSelectionWrapper(data,threshold):
-    #x_train, x_val, y, y_val = train_test_split(data_to_split, label_y, random_state=1, test_size=0.1, shuffle=True)
-    X = data.drop(["time_to_eruption","segment_id"], 1)  # Feature Matrix
+    newDataset = data[ImportantFeatures.index].copy()
+    # newDataset=newDataset.drop("time_to_eruption", 1)
+    return ImportantFeatures.index, newDataset
+
+
+def FeatureSelectionWrapper(data, threshold):
+    # x_train, x_val, y, y_val = train_test_split(data_to_split, label_y, random_state=1, test_size=0.1, shuffle=True)
+    X = data.drop(["time_to_eruption"], 1)  # Feature Matrix
     y = data["time_to_eruption"]  # Target Variable
     cols = list(X.columns)
-    while (len(cols) > 0):
+    while len(cols) > 0:
         p = []
         X_1 = X[cols].astype('float64')
         X_1 = sm.add_constant(X_1)
-        model = sm.OLS(y,X_1).fit()
+        model = sm.OLS(y, X_1).fit()
         p = pd.Series(model.pvalues.values[1:], index=cols)
         pmax = max(p)
         feature_with_p_max = p.idxmax()
-        if (pmax > threshold):
+        if pmax > threshold:
             cols.remove(feature_with_p_max)
         else:
             break
     selected_features_BE = cols
-    newDataset=data[selected_features_BE+["time_to_eruption"]].copy()
+    newDataset = data[selected_features_BE+["time_to_eruption"]].copy()
 
-    return selected_features_BE,newDataset
+    return selected_features_BE, newDataset
+
 
 def FeatureSelectionEmbedded(data, threshold):
     X = data.drop(["time_to_eruption", "segment_id"], 1)  # Feature Matrix
@@ -47,8 +50,8 @@ def FeatureSelectionEmbedded(data, threshold):
     imp_coef = coef.sort_values()
     ImportantFeatures = imp_coef[imp_coef > threshold]
     newDataset = data[ImportantFeatures.index].copy()
-    newDataset["time_to_eruption"]=data["time_to_eruption"]
-    return ImportantFeatures.index,newDataset
+    newDataset["time_to_eruption"] = data["time_to_eruption"]
+    return ImportantFeatures.index, newDataset
+
 
 path_local = '/home/fervn98/PycharmProjects/DATASETCI'
-
