@@ -68,7 +68,7 @@ def test_LGBM(train_data, validation_data, y_train, y_validation, folds):
     # predict in test set with all models
     predictions = []
     for model in models:
-        pred = model.predict(test_set)
+        pred = model.predict(test_set.drop(['segment_id'], axis=1))
         predictions.append(pred)
 
     # do the average of the multiple predictions
@@ -81,7 +81,7 @@ def test_LGBM(train_data, validation_data, y_train, y_validation, folds):
     sample_submission = pd.read_csv('sample_submission.csv')
 
     test_set['time_to_eruption'] = res_preds
-    sample_submission = pd.merge(sample_submission, test_set[['segment_id', 'time_to_eruption']], on='segment_id')
+    sample_submission = pd.merge(sample_submission.drop(['time_to_eruption_x'], axis=1), test_set[['segment_id', 'time_to_eruption']], on='segment_id')
     sample_submission = sample_submission.drop(['time_to_eruption_x'], axis=1)
     sample_submission.columns = ['segment_id', 'time_to_eruption']
 
