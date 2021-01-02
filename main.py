@@ -1,9 +1,9 @@
 import argparse
+import pandas as pd
 from sklearn import model_selection
 from aplying_nn import apply_NN
-import pandas as pd
-from FeatureSelection import FeatureSelectionUsingCorrelation,FeatureSelectionWrapper,FeatureSelectionEmbedded
-from model_application import apply_LGBM
+from feature_selection import FeatureSelectionUsingCorrelation,FeatureSelectionWrapper,FeatureSelectionEmbedded
+from apply_lgbm import apply_LGBM
 
 
 def MethodSelection(methodselected, train, val, y, y_val, test):
