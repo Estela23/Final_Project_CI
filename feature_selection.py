@@ -1,19 +1,25 @@
-from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn import model_selection
 import statsmodels.api as sm
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.linear_model import LassoCV
 
 
 def FeatureSelectionUsingCorrelation(data, correlation):
-    # x_train, x_val, y, y_val = train_test_split(data_to_split, label_y, random_state=1, test_size=0.1, shuffle=True)
+
     cor = data.corr()
     cor_target = abs(cor["time_to_eruption"])
     ImportantFeatures = cor_target[cor_target > correlation]
     newDataset = data[ImportantFeatures.index].copy()
-    # newDataset=newDataset.drop("time_to_eruption", 1)
-    return ImportantFeatures.index, newDataset
+
+    corr_train, corr_val, corr_y, corr_y_val = model_selection.train_test_split(
+        newDataset[newDataset.columns[:-1]],
+        newDataset[newDataset.columns[-1]],
+        test_size=0.2, shuffle=True)
+
+    test_set = pd.read_csv("data/test_final_data_complete.csv")
+    test_set_reduced = test_set[ImportantFeatures.index[:-1]]
+
+    return corr_train, corr_val, corr_y, corr_y_val, test_set_reduced
 
 
 def FeatureSelectionWrapper(data, threshold):
@@ -31,7 +37,15 @@ def FeatureSelectionWrapper(data, threshold):
             break
     newDataset = data[cols+["time_to_eruption"]].copy()
 
-    return cols, newDataset
+    wrapp_train, wrapp_val, wrapp_y, wrapp_y_val = model_selection.train_test_split(
+        newDataset[newDataset.columns[:-1]],
+        newDataset[newDataset.columns[-1]],
+        test_size=0.2, shuffle=True)
+
+    test_set = pd.read_csv("data/test_final_data_complete.csv")
+    test_set_reduced = test_set[cols]
+
+    return wrapp_train, wrapp_val, wrapp_y, wrapp_y_val, test_set_reduced
 
 
 def FeatureSelectionEmbedded(data, threshold):
@@ -47,6 +61,3 @@ def FeatureSelectionEmbedded(data, threshold):
     newDataset = data[ImportantFeatures.index].copy()
     newDataset["time_to_eruption"] = data["time_to_eruption"]
     return ImportantFeatures.index, newDataset
-
-
-path_local = '/home/fervn98/PycharmProjects/DATASETCI'
