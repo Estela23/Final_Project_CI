@@ -48,7 +48,7 @@ Example 1: Neural Network results with Wrapper as feature selection.
  python main.py --method NN --FeatureSelection Wrapper
  ```
 
-Example 1: LGBM results with all data
+Example 2: LGBM results with all data
  ```shell script
  python main.py --method LGBM
  ```
