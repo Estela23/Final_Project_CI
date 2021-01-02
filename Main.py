@@ -30,6 +30,14 @@ def MethodSelection(methodselected, dataframe,y_train):
         print(msefinal)
         print(rmsefinal)
         print(maefinal)
+    elif methodselected=="NN":
+        msefinal=0
+        rmsefinal=0
+        maefinal=0
+        for i in range(10):
+            train, val, y, y_val = model_selection.train_test_split(dataframe[dataframe.columns[:-1]],
+                                                                    dataframe[dataframe.columns[-1]],
+                                                                    test_size=0.2, shuffle=True)
     return 0
 def FeatureSelection(methodselected,dataframe, threshold):
     if methodselected=="Correlation":
@@ -39,7 +47,7 @@ def FeatureSelection(methodselected,dataframe, threshold):
     elif methodselected=="Embedded":
         return FeatureSelectionEmbedded(dataframe, threshold)
     return 0
-def load_data():
+def load_data(path_local):
     df_log = pd.read_csv(os.path.join(path_local, "train_final_data.csv"))
     df_log2 = pd.read_csv(os.path.join(path_local, "test_final_data.csv"))
     return df_log, df_log2
@@ -47,18 +55,29 @@ def main():
     parser = argparse.ArgumentParser(description="parameters")
     parser.add_argument("--loadData", type=str, default="Yes",
                         choices=["Yes", "No"])
+    parser.add_argument("--pathData", type=str, default="   ")
+    parser.add_argument("--trainPathData", type=str, default="   ")
+    parser.add_argument("--testPathData", type=str, default="   ")
     parser.add_argument("--FeatureSelection", type=str, default=None,
                         choices=['Correlation', 'Wrapper', 'Embedded'])
     parser.add_argument("--threshold", type=float, default=0.01)
     parser.add_argument("--method", type=str,default=None,
-                        choices=["LGBM"])
+                        choices=["LGBM", "NN"])
 
     args = parser.parse_args()
     if args.loadData == "Yes":
-        traindataframe, testdataframe=load_data()
+        traindataframe, testdataframe=load_data(args.pathData)
     elif args.loadData == "No":
-        create_matrix("INTRODUCIRPATH")
-        save_data_to_csv("","","")
+        train_list, train_matrix = create_matrix(args.trainPathData)
+        df_ground_truth = pd.read_csv(os.path.join(args.pathData, 'train.csv'))
+        ground_truth = df_ground_truth.loc[df_ground_truth['segment_id'].isin(train_list)]
+        y_train = [y for y in ground_truth["time_to_eruption"]]
+        d = {'segment_id': train_list, 'time_to_eruption': y_train}
+        dataframeeruption = pd.DataFrame(data=d)
+        result = pd.merge(train_matrix, dataframeeruption, on="segment_id")
+        save_data_to_csv(result, path_local, "train_final_data.csv")
+        test_list, test_matrix = create_matrix(args.testPathData)
+        save_data_to_csv(test_matrix, path_local, "test_final_data.csv")
     FeaturesSelected, Traindataframe=FeatureSelection(args.FeatureSelection,traindataframe,args.threshold)
     MethodSelection(args.method,Traindataframe, testdataframe)
 

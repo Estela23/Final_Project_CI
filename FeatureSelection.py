@@ -18,25 +18,20 @@ def FeatureSelectionUsingCorrelation(data, correlation):
 
 def FeatureSelectionWrapper(data, threshold):
     # x_train, x_val, y, y_val = train_test_split(data_to_split, label_y, random_state=1, test_size=0.1, shuffle=True)
-    X = data.drop(["time_to_eruption"], 1)  # Feature Matrix
-    y = data["time_to_eruption"]  # Target Variable
-    cols = list(X.columns)
+    X_train = data.drop(["time_to_eruption"], 1)  # Feature Matrix
+    y_train = data["time_to_eruption"]  # Target Variable
+    cols = list(X_train.columns)
     while len(cols) > 0:
-        p = []
-        X_1 = X[cols].astype('float64')
-        X_1 = sm.add_constant(X_1)
-        model = sm.OLS(y, X_1).fit()
-        p = pd.Series(model.pvalues.values[1:], index=cols)
-        pmax = max(p)
-        feature_with_p_max = p.idxmax()
-        if pmax > threshold:
-            cols.remove(feature_with_p_max)
+        X_1 = sm.add_constant(X_train[cols].astype('float64'))
+        model = sm.OLS(y_train, X_1).fit()
+        pvalues = pd.Series(model.pvalues.values[1:], index=cols)
+        if max(pvalues) > threshold:
+            cols.remove(pvalues.idxmax())
         else:
             break
-    selected_features_BE = cols
-    newDataset = data[selected_features_BE+["time_to_eruption"]].copy()
+    newDataset = data[cols+["time_to_eruption"]].copy()
 
-    return selected_features_BE, newDataset
+    return cols, newDataset
 
 
 def FeatureSelectionEmbedded(data, threshold):
