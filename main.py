@@ -1,85 +1,59 @@
 import argparse
-import os
-
 from sklearn import model_selection
-
-import evaluation
-from load_data import create_matrix, save_data_to_csv
+from aplying_nn import apply_NN
 import pandas as pd
 from FeatureSelection import FeatureSelectionUsingCorrelation,FeatureSelectionWrapper,FeatureSelectionEmbedded
-from model_application import apply_LGBM_regression
+from model_application import apply_LGBM
 
-path_local = '/home/fervn98/PycharmProjects/DATASETCI'
-def MethodSelection(methodselected, dataframe,y_train):
-    if methodselected=="LGBM":
-        msefinal=0
-        rmsefinal=0
-        maefinal=0
-        for i in range(10):
-            train, val, y, y_val = model_selection.train_test_split(dataframe[dataframe.columns[:-1]],
-                                                                    dataframe[dataframe.columns[-1]],
-                                                                    test_size=0.2, shuffle=True)
-            prediction=apply_LGBM_regression(train,y, val)
-            mse, rmse, mae = evaluation.all_errors(y_val, prediction)
-            msefinal+=mse
-            rmsefinal+=rmse
-            maefinal+=mae
-        msefinal=msefinal/10
-        rmsefinal=rmsefinal/10
-        maefinal=maefinal/10
-        print(msefinal)
-        print(rmsefinal)
-        print(maefinal)
-    elif methodselected=="NN":
-        msefinal=0
-        rmsefinal=0
-        maefinal=0
-        for i in range(10):
-            train, val, y, y_val = model_selection.train_test_split(dataframe[dataframe.columns[:-1]],
-                                                                    dataframe[dataframe.columns[-1]],
-                                                                    test_size=0.2, shuffle=True)
-    return 0
-def FeatureSelection(methodselected,dataframe, threshold):
-    if methodselected=="Correlation":
-        return FeatureSelectionUsingCorrelation(dataframe,threshold)
-    elif methodselected=="Wrapper":
+
+def MethodSelection(methodselected, train, val, y, y_val, test):
+    if methodselected == "LGBM":
+       apply_LGBM(train, val, y, y_val, test)
+
+    elif methodselected == "NN":
+        apply_NN(train, val, y, y_val, test)
+
+
+def FeatureSelection(methodselected, dataframe, threshold):
+    if methodselected == "Correlation":
+        return FeatureSelectionUsingCorrelation(dataframe, threshold)
+    elif methodselected == "Wrapper":
         return FeatureSelectionWrapper(dataframe, threshold)
-    elif methodselected=="Embedded":
-        return FeatureSelectionEmbedded(dataframe, threshold)
-    return 0
-def load_data(path_local):
-    df_log = pd.read_csv(os.path.join(path_local, "train_final_data.csv"))
-    df_log2 = pd.read_csv(os.path.join(path_local, "test_final_data.csv"))
+    else:
+        train, val, y, y_val = model_selection.train_test_split(dataframe[dataframe.columns[:-1]],
+                                                               dataframe[dataframe.columns[-1]],
+                                                               test_size=0.2, shuffle=True)
+
+        test_set = pd.read_csv("data/test_final_data_complete.csv")
+
+        return train, val, y, y_val, test_set
+
+    # elif methodselected == "Embedded":
+    #    return FeatureSelectionEmbedded(dataframe, threshold)
+
+
+def load_data():
+    df_log = pd.read_csv("data/train_final_data_complete.csv")
+    df_log2 = pd.read_csv("data/test_final_data_complete.csv")
+
     return df_log, df_log2
+
+
 def main():
     parser = argparse.ArgumentParser(description="parameters")
-    parser.add_argument("--loadData", type=str, default="Yes",
-                        choices=["Yes", "No"])
-    parser.add_argument("--pathData", type=str, default="   ")
-    parser.add_argument("--trainPathData", type=str, default="   ")
-    parser.add_argument("--testPathData", type=str, default="   ")
     parser.add_argument("--FeatureSelection", type=str, default=None,
-                        choices=['Correlation', 'Wrapper', 'Embedded'])
+                        choices=['Correlation', 'Wrapper'])  # , 'Embedded'
     parser.add_argument("--threshold", type=float, default=0.01)
     parser.add_argument("--method", type=str,default=None,
                         choices=["LGBM", "NN"])
 
     args = parser.parse_args()
-    if args.loadData == "Yes":
-        traindataframe, testdataframe=load_data(args.pathData)
-    elif args.loadData == "No":
-        train_list, train_matrix = create_matrix(args.trainPathData)
-        df_ground_truth = pd.read_csv(os.path.join(args.pathData, 'train.csv'))
-        ground_truth = df_ground_truth.loc[df_ground_truth['segment_id'].isin(train_list)]
-        y_train = [y for y in ground_truth["time_to_eruption"]]
-        d = {'segment_id': train_list, 'time_to_eruption': y_train}
-        dataframeeruption = pd.DataFrame(data=d)
-        result = pd.merge(train_matrix, dataframeeruption, on="segment_id")
-        save_data_to_csv(result, path_local, "train_final_data.csv")
-        test_list, test_matrix = create_matrix(args.testPathData)
-        save_data_to_csv(test_matrix, path_local, "test_final_data.csv")
-    FeaturesSelected, Traindataframe=FeatureSelection(args.FeatureSelection,traindataframe,args.threshold)
-    MethodSelection(args.method,Traindataframe, testdataframe)
+
+    traindataframe, testdataframe = load_data()
+
+    train, val, y, y_val, test = FeatureSelection(args.FeatureSelection, traindataframe, args.threshold)
+    MethodSelection(args.method, train, val, y, y_val, test)
+
 
 if __name__ == '__main__':
     main()
