@@ -25,19 +25,18 @@ def test_LGBM(train_data, validation_data, y_train, y_validation, folds, output_
     test_set = pd.read_csv("test_final_data_complete.csv")
     if reduced_technique == 1:
         test_set_reduced = test_set[list_features_corr[:-1]]
-        test_set_reduced["segment_id"] = test_set["segment_id"]
     elif reduced_technique == 2:
         test_set_reduced = test_set[list_features_wrapper]
-        test_set_reduced["segment_id"] = test_set["segment_id"]
     else:
-        test_set_reduced = test_set
+        test_set_reduced = test_set.drop("segment_id", 1)
+
 
     models = apply_kfold_LGBM(folds, train_data, y_train, validation_data, y_validation)  # create models using k-fold
 
     # predict in test set with all models
     predictions = []
     for model in models:
-        pred = model.predict(test_set_reduced.drop("segment_id", 1))
+        pred = model.predict(test_set_reduced)
         predictions.append(pred)
 
     # average of the multiple predictions
