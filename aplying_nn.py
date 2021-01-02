@@ -3,10 +3,15 @@ import pandas as pd
 import tensorflow.keras.backend as K
 import tensorflow as tf
 import numpy as np
+from sklearn import model_selection
 from sklearn.model_selection import train_test_split, KFold, GridSearchCV
 from sklearn.metrics import mean_absolute_error as mse
+from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.callbacks import EarlyStopping
+from tensorflow.python.keras.layers import Dense, Dropout, BatchNormalization
 from tensorflow.python.keras.wrappers.scikit_learn import KerasRegressor
+
+from FeatureSelection import FeatureSelectionUsingCorrelation, FeatureSelectionWrapper
 
 
 def load_train_data(file_name: str):  # 'train_final_data.csv'
@@ -39,16 +44,40 @@ def create_model(learn_rate=0.001, neurons=1, dropout=0.0):
         tf.keras.layers.Dense(neurons, activation="sigmoid"),
         tf.keras.layers.BatchNormalization(),
         tf.keras.layers.Dropout(dropout),
+        tf.keras.layers.Dense(256, activation="sigmoid"),
         tf.keras.layers.Dense(1, activation='relu')
     ])
 
     model.compile(
-        loss=root_mean_squared_error,
+        loss='mean_absolute_error',
         #optimizer=tf.keras.optimizers.Adamax(learning_rate=learn_rate, name="Adamax")
         optimizer=tf.keras.optimizers.Adam(learning_rate=learn_rate)
     )
     return model
 
+
+"""
+def create_model(learn_rate=0.001, neurons=1, dropout=0.0):
+    model = Sequential()
+
+    # The Input Layer :
+    model.add(Dense(128, kernel_initializer='normal', input_dim=160, activation='relu'))
+    model.add(BatchNormalization())
+    # The Hidden Layers :
+    model.add(Dense(256, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(256, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(256, kernel_initializer='normal', activation='relu'))
+
+    # The Output Layer :
+    model.add(Dense(1, kernel_initializer='normal', activation='linear'))
+
+    # Compile the network :
+    model.compile(loss='mean_absolute_error', optimizer='adam', metrics=['mean_absolute_error'])
+
+    return model
+"""
 
 def apply_kfold(number_of_folds, train, yy, validation_set, y_val):
     kfold = KFold(n_splits=number_of_folds, random_state=1, shuffle=True).split(yy)
@@ -99,6 +128,13 @@ Best: -1.060633 using {'optimizer': 'Adamax'}
 Best: -0.795547 using {'dropout': 0.3, 'learn_rate': 0.001, 'neurons': 500}
 NN rmse 3930.734834209182
 10 folds: NN rmse 3397.546502484067
+
+NN rmse 3339.7500524392176 -> wrapper
+
+NN rmse 2486.0056005932383
+NN rmse 2448.4627009066558 -> mae
+NN rmse 2648.260795127227 -> 2 dense
+NN rmse 2408.919950049586 
 """
 
 def grid_search_cv(X, Y):
@@ -125,6 +161,16 @@ def test():
     train, y = load_train_data("train_final_data_complete.csv")
     train, val, y, y_val = train_test_split(train, y, random_state=1, test_size=0.2, shuffle=True)
 
+    #df_data = pd.read_csv("train_final_data_complete.csv")
+    #df_data = df_data.drop(columns=["segment_id"])
+
+    #list_features_corr, df_reduced_corr_data = FeatureSelectionWrapper(df_data, 0.5)
+#
+    #train, val, y, y_val = model_selection.train_test_split(
+    #    df_reduced_corr_data[df_reduced_corr_data.columns[:-1]],
+    #    df_reduced_corr_data[df_reduced_corr_data.columns[-1]],
+    #    test_size=0.2, shuffle=True)
+
     test_set = load_test_data("test_final_data_complete.csv")
 
     # y = y.astype(np.float32)
@@ -134,10 +180,11 @@ def test():
     models = apply_kfold(folds, train, yy, val, y_val)  # create models using k-fold
 
     # predict in test set with all models
+    test_set_reduced = test_set
     predictions = []
     for model in models:
-        pred = model.predict(test_set)
-        # pred = np.expm1(pred).reshape((pred.shape[0],))
+        pred = model.predict(test_set_reduced)
+        pred = np.expm1(pred).reshape((pred.shape[0],))
         predictions.append(pred)
 
     # do the average of the multiple predictions
