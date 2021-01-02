@@ -4,13 +4,11 @@ from sklearn import model_selection
 import evaluation
 from deap import base, creator, tools, algorithms
 from scipy.stats import bernoulli
-from bitstring import BitArray
 from lightgbm import LGBMRegressor
 from sympy.combinatorics.graycode import GrayCode, gray_to_bin, bin_to_gray
 
 
 # we will use ga to find the best n_estimators, number_leaves and maximum depth of the tree got LGM
-
 
 def clean_bins(lst):
     result = ''.join(str(e) for e in lst)
@@ -31,7 +29,7 @@ def train_evaluate(ga_individual_solution):
     if n_estimators == 0 or n_leaves == 0 or max_depth == 0:
         return 100,
 
-    file_name = 'train_final_data_complete.csv'
+    file_name = 'data/train_final_data_complete.csv'
     df_data = pd.read_csv(file_name)
     df_data = df_data.drop(columns=["segment_id"])
     # split into train and validation (80/20)
