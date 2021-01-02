@@ -3,15 +3,10 @@ import pandas as pd
 import tensorflow.keras.backend as K
 import tensorflow as tf
 import numpy as np
-from sklearn import model_selection
-from sklearn.model_selection import train_test_split, KFold, GridSearchCV
+from sklearn.model_selection import KFold, GridSearchCV
 from sklearn.metrics import mean_absolute_error as mse
-from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.callbacks import EarlyStopping
-from tensorflow.python.keras.layers import Dense, Dropout, BatchNormalization
 from tensorflow.python.keras.wrappers.scikit_learn import KerasRegressor
-
-from FeatureSelection import FeatureSelectionUsingCorrelation, FeatureSelectionWrapper
 
 
 def load_train_data(file_name: str):  # 'train_final_data.csv'
@@ -37,9 +32,9 @@ def rmse(y_true, y_pred):
     return math.sqrt(mse(y_true, y_pred))
 
 
-def create_model(learn_rate=0.001, neurons=1, dropout=0.0):
+def create_model(input_size, learn_rate=0.001, neurons=1, dropout=0.0):
     model = tf.keras.Sequential([
-        tf.keras.layers.Input((160,)),
+        tf.keras.layers.Input((input_size,)),
         tf.keras.layers.BatchNormalization(),
         tf.keras.layers.Dense(neurons, activation="sigmoid"),
         tf.keras.layers.BatchNormalization(),
@@ -56,29 +51,6 @@ def create_model(learn_rate=0.001, neurons=1, dropout=0.0):
     return model
 
 
-"""
-def create_model(learn_rate=0.001, neurons=1, dropout=0.0):
-    model = Sequential()
-
-    # The Input Layer :
-    model.add(Dense(128, kernel_initializer='normal', input_dim=160, activation='relu'))
-    model.add(BatchNormalization())
-    # The Hidden Layers :
-    model.add(Dense(256, kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(256, kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(256, kernel_initializer='normal', activation='relu'))
-
-    # The Output Layer :
-    model.add(Dense(1, kernel_initializer='normal', activation='linear'))
-
-    # Compile the network :
-    model.compile(loss='mean_absolute_error', optimizer='adam', metrics=['mean_absolute_error'])
-
-    return model
-"""
-
 def apply_kfold(number_of_folds, train, yy, validation_set, y_val):
     kfold = KFold(n_splits=number_of_folds, random_state=1, shuffle=True).split(yy)
     predictions = []
@@ -89,7 +61,7 @@ def apply_kfold(number_of_folds, train, yy, validation_set, y_val):
 
         print(f'Fold {i}')
 
-        model = create_model(neurons=1000, dropout=0.6)
+        model = create_model(train.shape[1], neurons=1000, dropout=0.6)
 
         model.fit(
             train.values[train_i],
@@ -156,31 +128,15 @@ def grid_search_cv(X, Y):
         print("%f (%f) with: %r" % (mean, stdev, param))
 
 
-def test():
+def apply_NN(train, val, y, y_val, test_set_reduced):
     folds = 10
-    train, y = load_train_data("train_final_data_complete.csv")
-    train, val, y, y_val = train_test_split(train, y, random_state=1, test_size=0.2, shuffle=True)
-
-    #df_data = pd.read_csv("train_final_data_complete.csv")
-    #df_data = df_data.drop(columns=["segment_id"])
-
-    #list_features_corr, df_reduced_corr_data = FeatureSelectionWrapper(df_data, 0.5)
-#
-    #train, val, y, y_val = model_selection.train_test_split(
-    #    df_reduced_corr_data[df_reduced_corr_data.columns[:-1]],
-    #    df_reduced_corr_data[df_reduced_corr_data.columns[-1]],
-    #    test_size=0.2, shuffle=True)
-
-    test_set = load_test_data("test_final_data_complete.csv")
-
-    # y = y.astype(np.float32)
     yy = np.log1p(y)
+
     # grid_search_cv(train, yy)
 
     models = apply_kfold(folds, train, yy, val, y_val)  # create models using k-fold
 
     # predict in test set with all models
-    test_set_reduced = test_set
     predictions = []
     for model in models:
         pred = model.predict(test_set_reduced)
@@ -194,8 +150,8 @@ def test():
     res_preds /= folds
 
     # export results as submission file
-    test_set = pd.read_csv("test_final_data_complete.csv")
-    sample_submission = pd.read_csv('sample_submission.csv')
+    test_set = pd.read_csv("data/test_final_data_complete.csv")
+    sample_submission = pd.read_csv('data/sample_submission.csv')
 
     test_set['time_to_eruption'] = res_preds
     sample_submission = pd.merge(sample_submission, test_set[['segment_id', 'time_to_eruption']], on='segment_id')
@@ -203,6 +159,3 @@ def test():
     sample_submission.columns = ['segment_id', 'time_to_eruption']
 
     sample_submission.to_csv('submission.csv', index=False)
-
-
-test()
